@@ -1,7 +1,8 @@
 // hangar-sim
 // simulate and compare two sales strategies for the hangar in GTA Online
 // assumes using rooster to source
-// full explanation of how hangar works is beyond scope of this documentation
+// assumes higgins helitours is owned
+// full explanation of how the hangar works is beyond scope of this documentation
 // strategy 1: small sales. when the hangar is full, sell the cargo type of highest value
 // strategy 2: big sales. when the hangar is full, just sell everything
 
@@ -13,7 +14,12 @@
 #define CARGO_TYPES 8
 #define MAX_CRATES 50
 
-#define STEPS 1000000000
+#define CRATE_VALUE 30000
+#define HIGGINS_BONUS 1.1
+#define RON_COST 30000
+#define BIG_SALE_VALUE 1620000
+
+#define STEPS 2000000000
 
 
 // good enough RNG
@@ -50,9 +56,12 @@ int main(void) {
     long long big_sales = 0;
     long long total_cost = 0;
     int max_crates_per_sale = 0;
+    float steps_per_second = 0.0;
 
     // bonus table: bonus[cargo_type][num_crates], indices 0..50
     // contains multiplier to use when selling single cargo type
+    // ie. bonus for selling j number of cargo type i is 
+    // bonus[i][j]
     float bonus[CARGO_TYPES][MAX_CRATES + 1];
 
     for (int i = 0; i < CARGO_TYPES; i++) {
@@ -88,15 +97,18 @@ int main(void) {
     long long step = 0;
     int countdown = STEPS;
 
-    // run similuation. at each step, rooster sources crates. if either
+    // run similuation.
+    // at each step, rooster sources crates. if either
     // hangar is full, it is sold using the appropriate strategy.
     while (1) {
         step++;
 
-
-        // rooster has a 25% chance of sourcing 2 crates
+        // source crate(s)
+        //
         // costs 25k to source
         total_cost += 25000;
+
+        // rooster has a 25% chance of sourcing 2 crates
         // use a good enough random number
         uint64_t rng = xorshift64();
         // use bits 0-2 to select cargo type
@@ -111,7 +123,8 @@ int main(void) {
         // add crate
         ss[crate] += add_ss;
         // calculate new value for cargo type
-        ss_value[crate] = (int)(ss[crate] * 30000 * 1.1 * bonus[crate][ss[crate]]);
+        // value will always land on whole dollar amount so cast as int
+        ss_value[crate] = (int)(ss[crate] * CRATE_VALUE * HIGGINS_BONUS * bonus[crate][ss[crate]]);
 
         // update total crates
         ss_crates += add_ss;
@@ -133,7 +146,7 @@ int main(void) {
                 max_crates_per_sale = ss[best_slot];
                 printf("at sale %lld, max sold is %d\n", small_sales, max_crates_per_sale);
             }
-            small_profits += best_value - 30000;
+            small_profits += best_value - RON_COST;
             ss_crates -= ss[best_slot];
             ss[best_slot] = 0;
             ss_value[best_slot] = 0;
@@ -141,7 +154,7 @@ int main(void) {
 
         if (bs_crates == MAX_CRATES) {
             big_sales++;
-            big_profits += 1630000;
+            big_profits += BIG_SALE_VALUE; // sale value always constant
             bs_crates = 0;
         }
 
