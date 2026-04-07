@@ -58,8 +58,7 @@ fn main() {
 
         total_cost += 25000;
         let cur_crate: usize = rng.random_range(0..=7);
-        let num_crates: u32 = if rng.random_range(1..=4) == 1 { 2 } else { 1 };
-//        println!("sourced {} crates of {}", num_crates, cur_crate);
+        let num_crates: u32 = if rng.random_range(0..4) == 0 { 2 } else { 1 };
         let add_ss: u32 = if num_crates + ss_crates <= 50 { num_crates } else { 1 };
         let add_bs: u32 = if num_crates + bs_crates <= 50 { num_crates } else { 1 };
         ss[cur_crate] += add_ss;
@@ -67,22 +66,20 @@ fn main() {
         ss_crates += add_ss;
         bs_crates += add_bs;
 
-//        println!("SC: {} BC: {}", ss_crates, bs_crates);
-
         if ss_crates == MAX_CRATES as u32 {
             small_sales += 1;
-            let mut best_slot: u32 = 0;
+            let mut best_slot: usize = 0;
             let mut best_value: u32 = 0;
             for i in 0..CARGO_TYPES {
                 if ss_value[i] > best_value {
-                    best_slot = i as u32;
+                    best_slot = i;
                     best_value = ss_value[i];
                 }
             }
-            small_profits += (best_value - 30000) as u64;
-            ss_crates -= (ss[best_slot as usize]) as u32;
-            ss[best_slot as usize] = 0;
-            ss_value[best_slot as usize] = 0;
+            small_profits += (best_value as u64) - 30000;
+            ss_crates -= ss[best_slot];
+            ss[best_slot] = 0;
+            ss_value[best_slot] = 0;
         }
         if bs_crates == MAX_CRATES as u32 {
             big_sales += 1;
