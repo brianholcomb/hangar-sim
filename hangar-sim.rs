@@ -5,7 +5,7 @@ fn main() {
     const CARGO_TYPES: usize = 8;
     const MAX_CRATES: usize = 50;
 
-    const STEPS: u64 = 10000000;
+    const STEPS: u64 = 1000000000;
 
     let mut rng = rand::rng();
 
@@ -89,7 +89,10 @@ fn main() {
     }
     let sales_ratio: f64 = small_sales as f64 / big_sales as f64;
     let profit_ratio: f64 = small_profits as f64 / big_profits as f64;
-    println!("Cost: {} SS: {} ${} BS: {} ${}", total_cost, small_sales, small_profits, big_sales, big_profits);
+    let ss_net: u64 = small_profits - total_cost;
+    let bs_net: u64 = big_profits - total_cost;
+    println!("SS: {} ${} BS: {} ${}", small_sales, small_profits, big_sales, big_profits);
+    println!("Cost: ${} SS Net: ${} BS Net: ${}", total_cost, ss_net, bs_net);
     println!("Sales Ratio: {} Profit Ratio: {}", sales_ratio, profit_ratio);
 
 
